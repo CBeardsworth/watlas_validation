@@ -55,3 +55,4 @@ movingPoints_filt %>% #error by number of receivers
     filter(time_diff < 2)%>%
     group_by(NBS)%>%
     summarize(n = length(error_dist), mean_error = mean(error_dist), sd= sd(error_dist), median_error = median(error_dist), q2.5 = quantile(error_dist, 0.025),q50 = quantile(error_dist, 0.5),q97.5 = quantile(error_dist, 0.975))
+

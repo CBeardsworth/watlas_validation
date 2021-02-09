@@ -2,6 +2,7 @@ library(sf)
 library(ggplot2)
 library(ggspatial)
 library(cowplot)
+library(dplyr)
 
 # Get data --------------------------------------------------------------------------------------------------------------------
 
