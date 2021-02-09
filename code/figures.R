@@ -3,6 +3,7 @@ library(ggplot2)
 library(ggspatial)
 library(cowplot)
 library(dplyr)
+library(atlastools)
 
 # Get data --------------------------------------------------------------------------------------------------------------------
 
@@ -332,3 +333,206 @@ p <- cowplot::plot_grid(plotlist = my_plots, ncol=2, nrow=5)
 p
 dev.off()
 
+# ESM S1 -----
+library(data.table)
+library(lubridate)
+all_var_stat = NULL
+all_var_moving = NULL
+
+#VARXY Filter figures
+for (var in seq(10,5000,10)){
+    #stationary test
+    sum_stat_filt <- read.csv("data/stat_raw.csv")%>%
+        filter(VARX < var & VARY< var)%>%
+        group_by(ID)%>%
+        summarize(n = length(error_dist), fix_rate= (n/300)*100, mean_NBS = mean(NBS),sd_NBS = sd(NBS), mean_error = mean(error_dist), sd= sd(error_dist), q2.5 = quantile(error_dist, 0.025), q50 = quantile(error_dist, 0.5),q97.5 = quantile(error_dist, 0.975))
+    
+    var_stat <- data.frame(var=var, sum_stat_filt)
+    all_var_stat <- rbind(all_var_stat,var_stat)
+    
+    #moving test
+    sum_moving_filt <- read.csv("data/moving_raw.csv")%>%
+        filter(VARX < var & VARY< var)%>%
+        filter(time_diff < 2)%>%
+        group_by(NBS) %>%
+        summarize(n = length(error_dist), mean_error = mean(error_dist), sd= sd(error_dist), median_error = median(error_dist), q2.5 = quantile(error_dist, 0.025),q50 = quantile(error_dist, 0.5),q97.5 = quantile(error_dist, 0.975))
+    
+    
+    var_moving <- data.frame(var=var, sum_moving_filt)
+    all_var_moving <- rbind(all_var_moving,var_moving)}
+
+#smoothing window
+all_win_stat = NULL
+all_win_moving = NULL
+
+gps_stat <- read_sf("data/gps_stat.gpkg", as_tibble = F)
+
+match_gps_moving <- read_sf("data/gps_moving.gpkg", as_tibble = F)%>%
+    select(time, gps_x, gps_y)
+setDT(match_gps_moving)
+match_gps_moving[,gps_time_match:=time]
+setkey(match_gps_moving,gps_time_match)
+
+for (win in c(0,seq(3,60,2))){
+    
+    if(win==0){
+        sum_stat_filt <- read.csv("data/stat_raw.csv") %>%
+            filter(VARX <2000, VARY < 2000)  %>%
+            group_by(ID)%>%
+            summarize(n = length(error_dist), fix_rate= (n/300)*100, mean_NBS = mean(NBS),sd_NBS = sd(NBS), mean_error = mean(error_dist), sd= sd(error_dist), q2.5 = quantile(error_dist, 0.025), q50 = quantile(error_dist, 0.5),q97.5 = quantile(error_dist, 0.975))
+        
+        sum_moving_filt <- read.csv("data/moving_raw.csv") %>%
+            filter(time_diff < 2, VARX <2000, VARY < 2000)%>%
+            group_by(NBS)%>%
+            summarize(n = length(error_dist), mean_error = mean(error_dist), sd= sd(error_dist), median_error = median(error_dist), q2.5 = quantile(error_dist, 0.025),q50 = quantile(error_dist, 0.5),q97.5 = quantile(error_dist, 0.975))
+    }
+    
+    else{
+        
+        sum_stat_filt <- read.csv("data/stat_raw.csv") %>%
+            mutate(Timestamp = as.POSIXct(Timestamp), TIME = as.numeric(TIME)/1000) %>%
+            filter(VARX <2000, VARY < 2000) %>%
+            group_by(ID)%>%
+            atl_median_smooth(moving_window=win)%>%
+            mutate(error_dist = sqrt(((gps_mean_x - X)^2) + ((gps_mean_y -Y)^2))) %>%
+            group_by(ID)%>%
+            summarize(n = length(error_dist), fix_rate= (n/300)*100, mean_NBS = mean(NBS),sd_NBS = sd(NBS), mean_error = mean(error_dist), sd= sd(error_dist), q2.5 = quantile(error_dist, 0.025), q50 = quantile(error_dist, 0.5),q97.5 = quantile(error_dist, 0.975))
+        
+        
+        sum_moving_filt <- read.csv("data/moving_raw.csv") %>%
+            mutate(Timestamp = as.POSIXct(Timestamp), time = as.POSIXct(time), TIME = as.numeric(TIME)/1000, raw_x = X, raw_y = Y) %>%
+            filter(VARX <2000, VARY < 2000)%>%
+            atl_median_smooth(moving_window=win)%>%
+            mutate(error_dist = sqrt(((gps_x - X)^2) + ((gps_y -Y)^2)))%>%
+            filter(time_diff < 2)%>%
+            group_by(NBS)%>%
+            summarize(n = length(error_dist), mean_error = mean(error_dist), sd= sd(error_dist), median_error = median(error_dist), q2.5 = quantile(error_dist, 0.025),q50 = quantile(error_dist, 0.5),q97.5 = quantile(error_dist, 0.975))
+        
+    }
+    
+    win_stat <- data.frame(win=win, sum_stat_filt)
+    all_win_stat <- rbind(all_win_stat,win_stat)
+    
+    win_moving <- data.frame(win=win, sum_moving_filt)
+    all_win_moving <- rbind(all_win_moving,win_moving)
+    }
+all_win_stat <- all_win_stat[all_win_stat$n>all_win_stat$win,] # ensure that when median window is more than the window it is removed. 
+
+# ESM1 - plots ------    
+#Stationary plots
+
+all_var_stat$ID <- as.factor(all_var_stat$ID)
+stat1 <- ggplot(all_var_stat[all_var_stat$var <=5000 ,], aes(x=var, y = mean_error, group = as.factor(ID), col=ID))+
+    geom_line(size=1)+
+    scale_y_continuous(expand=c(0,0), limits=c(0,100), breaks = seq(0,100,20))+
+    scale_x_reverse(expand=c(0,0), limits=c(5000, -100))+
+    scale_color_manual(values=rainbow(n=16))+
+    ylab("mean distance to GPS (m)")+
+    xlab("VARX & VARY filtering values")+
+    geom_vline(xintercept=2000,linetype="dashed")+
+    theme(legend.position="none",
+          panel.background = element_rect(fill = "white"),
+          panel.border= element_rect(colour="black", fill=NA),
+          legend.spacing.y = unit(-0.15, "cm"),
+          legend.key=element_blank())
+
+
+
+stat2 <- ggplot(all_var_stat[all_var_stat$var <=5000 ,], aes(x=var, y = fix_rate, group = as.factor(ID), col=ID))+
+    geom_line(size=1)+
+    scale_y_continuous(expand=c(0,0), limits=c(0,105), breaks=seq(0,100,10))+
+    scale_x_reverse(expand=c(0,0), limits=c(5000, -100))+
+    geom_vline(xintercept=2000,linetype="dashed")+
+    ylab("% of expected localisations remaining")+
+    xlab("VARX & VARY filtering values")+
+    scale_color_manual(values=rainbow(n=16))+
+    theme(legend.position="none",
+          panel.background = element_rect(fill = "white"),
+          panel.border= element_rect(colour="black", fill=NA),
+          legend.spacing.y = unit(-0.15, "cm"),
+          legend.key=element_blank())
+
+#smoothing
+all_win_stat$ID <- as.factor(all_win_stat$ID)
+stat3 <- ggplot(all_win_stat, aes(x=win, y = mean_error, group = as.factor(ID), col=ID))+
+    geom_line(size=1)+
+    scale_y_continuous(expand=c(0,0), limits = c(0,50), breaks=seq(0,50,10))+
+    scale_x_continuous(expand=c(0,0), limits=c(0,60), breaks=seq(3,60,6))+
+    ylab("mean distance to GPS (m)")+
+    xlab("median smooth")+
+    scale_color_manual(values=rainbow(n=16))+
+    theme(panel.background = element_rect(fill = "white"),
+          panel.border= element_rect(colour="black", fill=NA),
+          legend.spacing.y = unit(-0.15, "cm"),
+          legend.key=element_blank())
+
+#moving plots
+all_var_moving$NBS <- as.factor(all_var_moving$NBS)
+
+move1 <- ggplot(all_var_moving[all_var_moving$var <=5000,], aes(x=var, y = mean_error, group = as.factor(NBS), col=NBS))+
+    geom_line(size=1)+
+    scale_y_continuous(expand=c(0,0), limits=c(0,25), breaks=seq(0,25,5))+
+    scale_x_reverse(expand=c(0,0), limits=c(5000, -100))+
+    scale_color_viridis_d()+
+    geom_vline(xintercept=2000,linetype="dashed")+
+    ylab("mean distance to GPS (m)")+
+    xlab("VARX & VARY filtering values")+
+    theme(legend.position="none",
+          panel.background = element_rect(fill = "white"),
+          panel.border= element_rect(colour="black", fill=NA),
+          legend.spacing.y = unit(-0.15, "cm"),
+          legend.key=element_blank())
+
+
+move2 <- ggplot(all_var_moving[all_var_moving$var <=5000,], aes(x=var, y = n, group = as.factor(NBS), col=NBS))+
+    geom_line(size=1)+
+    scale_y_continuous(expand=c(0,0), limits=c(0,10000), breaks = c(100,seq(1000,10000,2000)))+
+    scale_x_reverse(expand=c(0,0), limits=c(5000,-100))+
+    geom_vline(xintercept=2000,linetype="dashed")+
+    scale_color_viridis_d()+
+    ylab("number of localisations")+
+    xlab("VARX & VARY filtering values")+
+    theme(panel.background = element_rect(fill = "white"),
+          legend.position="none",
+          panel.border= element_rect(colour="black", fill=NA),
+          legend.spacing.y = unit(-0.15, "cm"),
+          legend.key=element_blank())
+
+#smoothing
+all_win_moving$NBS <- as.factor(all_win_moving$NBS)
+move3 <- ggplot(all_win_moving, aes(x=win, y = mean_error, group = as.factor(NBS), col=NBS))+
+    geom_line(size=1)+
+    scale_color_viridis_d()+
+    scale_y_continuous(expand=c(0,0), limits=c(0,25), breaks=seq(0,25,5))+
+    scale_x_continuous(expand=c(0,0), limits=c(0,60), breaks=seq(3,60,6))+
+    ylab("mean distance to GPS (m)")+
+    xlab("median smooth")+
+    labs(col="Num. \nReceivers")+
+    theme(panel.background = element_rect(fill = "white"),
+          panel.border= element_rect(colour="black", fill=NA),
+          legend.spacing.y = unit(-0.15, "cm"),
+          legend.key=element_blank())
+
+stat_plots <- plot_grid(stat1, stat2,stat3, ncol=3, rel_widths = c(0.8,0.8,1),labels="auto")
+move_plots <- plot_grid(move1, move2,move3, ncol=3, rel_widths = c(0.8,0.8,1),labels=c("d","e","f"))
+
+# now add the title
+title_stat <- ggdraw() + 
+    draw_label(
+        "Stationary test data",
+        fontface = 'bold',
+        x = 0.5, hjust=0.65
+    ) 
+
+title_move <- ggdraw() + 
+    draw_label(
+        "Moving test data",
+        fontface = 'bold',
+        x = 0.5, hjust=0.65
+    )
+
+pdf(file = "figs/Validation_Supplementary1_FilterSmoothing.pdf",
+    width = 9, height = 10)
+p <- plot_grid(title_stat, stat_plots,title_move,move_plots, ncol=1, nrow=4, rel_heights = c(0.1,1,0.1,1))
+p
+dev.off()
