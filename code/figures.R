@@ -92,6 +92,11 @@ pdf(file = "figs/Validation_Fig1_wadden.pdf",
 wadden
 dev.off()
 
+png(file = "figs/Validation_Fig1_wadden.png", unit="in", res= 600,
+    width = 9, height = 8)
+wadden
+dev.off()
+
 # Figure 2 - experiment -----
 
 track <- ggplot() +  
@@ -124,6 +129,11 @@ track <- ggplot() +
 #track
 
 pdf(file = "figs/Validation_Fig2_experiment.pdf",
+    width = 9, height = 5.5)
+track
+dev.off()
+
+png(file = "figs/Validation_Fig2_experiment.png",unit="in", res=600,
     width = 9, height = 5.5)
 track
 dev.off()
@@ -194,6 +204,12 @@ filt <- ggplot() +
 leg <- get_legend(raw + theme(legend.position="bottom"))
 
 pdf(file = "figs/Validation_Fig3_Raw_v_Filt.pdf",
+    width = 9, height = 12)
+p <- plot_grid(raw, filt,leg, labels=c("A","B", ""), ncol=1, nrow=3, rel_heights = c(1,1,0.1))
+p
+dev.off()
+
+png(file = "figs/Validation_Fig3_Raw_v_Filt.png",unit="in", res=600,
     width = 9, height = 12)
 p <- plot_grid(raw, filt,leg, labels=c("A","B", ""), ncol=1, nrow=3, rel_heights = c(1,1,0.1))
 p
@@ -291,6 +307,12 @@ p <- plot_grid(maps,leg,  hist, ncol=1, nrow=3,rel_heights = c(1,0.08,0.7))
 p
 dev.off()
 
+png(file = "figs/Validation_Fig4_Raw_v_Filt_Static.png",unit="in", res=600,
+    width = 9, height = 7)
+p <- plot_grid(maps,leg,  hist, ncol=1, nrow=3,rel_heights = c(1,0.08,0.7))
+p
+dev.off()
+
 
 # Figure 5 - Detections for each receiver -----
 
@@ -330,6 +352,18 @@ my_plots <- lapply(unique(atlas_dets_geom$BS), FUN=plot_dets)
 pdf(file = "figs/Validation_Fig5_Dets.pdf",
     width = 9, height = 18)
 p <- cowplot::plot_grid(plotlist = my_plots, ncol=2, nrow=5)
+p
+dev.off()
+
+png(file = "figs/Validation_Fig5_Dets.png", unit="in", res=600,
+    width = 9, height = 18)
+p <- cowplot::plot_grid(plotlist = my_plots, ncol=2, nrow=5)
+p
+dev.off()
+
+png(file = "figs/Validation_Fig5_Dets.png", unit="in", res=600,
+    width = 18, height = 9)
+p <- cowplot::plot_grid(plotlist = my_plots, ncol=4, nrow=3)
 p
 dev.off()
 
@@ -536,3 +570,10 @@ pdf(file = "figs/Validation_Supplementary1_FilterSmoothing.pdf",
 p <- plot_grid(title_stat, stat_plots,title_move,move_plots, ncol=1, nrow=4, rel_heights = c(0.1,1,0.1,1))
 p
 dev.off()
+
+png(file = "figs/Validation_Supplementary1_FilterSmoothing.png",unit="in", res=600,
+    width = 9, height = 10)
+p <- plot_grid(title_stat, stat_plots,title_move,move_plots, ncol=1, nrow=4, rel_heights = c(0.1,1,0.1,1))
+p
+dev.off()
+
