@@ -49,10 +49,10 @@ atlas_dets_geom <- read.csv("data/detections_atlas.csv")%>%
 
 #### Figures ####-------------------------------------------------------------------------------------------------------------
 
-bath <- read_sf("D:/OneDrive - NIOZ/2_Reference Data/Basemaps/utm31 Bathy/DutchWaddenBathymetry-144_LAT.shp")
-coast_NL <- read_sf("D:/OneDrive - NIOZ/2_Reference Data/Basemaps/WaddenCoast.gpkg")#%>% #https://www.eea.europa.eu/data-and-maps/data/eea-coastline-for-analysis-2/gis-data/eea-coastline-polygon 
-coast <- read_sf("D:/OneDrive - NIOZ/2_Reference Data/Basemaps/utm31 Bathy/DutchWaddenBathymetry100.shp")
-receivers <- read_sf("D:/OneDrive - NIOZ/2_Reference Data/Receiver Locations/2020receivers.gpkg")
+bath <- read_sf("data/DutchWaddenBathymetry-144_LAT.shp")
+coast_NL <- read_sf("data/WaddenCoast.gpkg")#%>% #https://www.eea.europa.eu/data-and-maps/data/eea-coastline-for-analysis-2/gis-data/eea-coastline-polygon 
+coast <- read_sf("data/DutchWaddenBathymetry100.shp")
+receivers <- read_sf("data/2020receivers.gpkg")
 
 # Figure 1 - Wadden sea and receiver overview -----
 
