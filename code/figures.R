@@ -222,8 +222,8 @@ raw <- ggplot() +
     geom_sf(data = bath, aes(fill="Mudflat"),col="grey50", lwd=0.1) + 
     geom_sf(data = coast,aes(fill="Land"), col="grey40", lwd=0.1) +
     geom_sf(data=receivers, aes(shape="Receivers", size= "Receivers"), fill="red")+
-    geom_sf(data=stat, aes(shape = "ATLAS Location estimate", size= "ATLAS Location estimate"), col="darkorchid3")+
     geom_sf(data=gps_stat, aes(shape = "GPS Location Estimate (mean)", size = "GPS Location Estimate (mean)"), col="black")+
+    geom_sf(data=stat, aes(shape = "ATLAS Location estimate", size= "ATLAS Location estimate"), col="darkorchid3")+
     xlab("Longitude")+
     ylab("Latitude")+
     coord_sf(xlim= c(646864,654867), ylim=c(5900956,5908006))+ #griend only
@@ -238,7 +238,7 @@ raw <- ggplot() +
           legend.position = "none") +
     scale_fill_manual(values = c("Land" = "grey65", "Mudflat" = "papayawhip"),
                       name = NULL) +
-    scale_shape_manual(values = c("Receivers" = 24, "GPS Location Estimate (mean)" = 4, "ATLAS Location estimate"=4),
+    scale_shape_manual(values = c("Receivers" = 24, "GPS Location Estimate (mean)" = 1, "ATLAS Location estimate"=4),
                        name = NULL)+
     scale_size_manual(values = c("Receivers" = 3, "GPS Location Estimate (mean)" = 5, "ATLAS Location estimate"=1),
                       name = NULL)+
@@ -251,8 +251,8 @@ filt <- ggplot() +
     geom_sf(data = bath, aes(fill="Mudflat"),col="grey50", lwd=0.1) + 
     geom_sf(data = coast,aes(fill="Land"), col="grey40", lwd=0.1) +
     geom_sf(data=receivers, aes(shape="Receivers", size= "Receivers"), fill="red")+
-    geom_sf(data=stat_filt, aes(shape = "ATLAS Location estimate", size= "ATLAS Location estimate"), col="darkorchid3")+
     geom_sf(data=gps_stat, aes(shape = "GPS Location Estimate (mean)", size = "GPS Location Estimate (mean)"), col="black")+
+    geom_sf(data=stat_filt, aes(shape = "ATLAS Location estimate", size= "ATLAS Location estimate"), col="darkorchid3")+
     xlab("Longitude")+
     ylab("Latitude")+
     coord_sf(xlim= c(646864,654867), ylim=c(5900956,5908006))+ #griend only
@@ -267,13 +267,13 @@ filt <- ggplot() +
           legend.position = "none") +
     scale_fill_manual(values = c("Land" = "grey65", "Mudflat" = "papayawhip"),
                       name = NULL) +
-    scale_shape_manual(values = c("Receivers" = 24, "GPS Location Estimate (mean)" = 4, "ATLAS Location estimate"=4),
+    scale_shape_manual(values = c("Receivers" = 24, "GPS Location Estimate (mean)" = 1, "ATLAS Location estimate"=4),
                        name = NULL)+
     scale_size_manual(values = c("Receivers" = 3, "GPS Location Estimate (mean)" = 5, "ATLAS Location estimate"=1),
                       name = NULL)+
     guides(size = guide_legend(override.aes = list(size=c(2,5,5), col=c("darkorchid3", "black","black"))))
 
-#filt
+filt
 
 leg <- get_legend(raw + theme(legend.position="bottom"))
 
@@ -307,7 +307,7 @@ p <- plot_grid(maps,leg,  hist, ncol=1, nrow=3,rel_heights = c(1,0.08,0.7))
 p
 dev.off()
 
-png(file = "figs/Validation_Fig4_Raw_v_Filt_Static.png",unit="in", res=600,
+png(file = "figs/Validation_Fig4_Raw_v_Filt_Static.png",unit="in", res=1200,
     width = 9, height = 7)
 p <- plot_grid(maps,leg,  hist, ncol=1, nrow=3,rel_heights = c(1,0.08,0.7))
 p
