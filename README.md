@@ -2,7 +2,7 @@
 
 _Christine E. Beardsworth, Evy Gobbens, Frank van Maarseveen, Bas Denissen, Anne Dekinga, Ran Nathan, Sivan Toledo, and Allert I. Bijleveld_
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4527614.svg)](https://doi.org/10.5281/zenodo.4527614)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4527613.svg)](https://doi.org/10.5281/zenodo.4527613)
 
 For any questions about the code please contact Christine at c.e.beardsworth@gmail.com
 
