@@ -12,23 +12,23 @@ library(RMySQL)
 
 con <- dbConnect(MySQL(),
                  user="atlaskama", password="watlasrulez:)",
-                 dbname="atlas2020", host="abtdb1.nioz.nl")
+                 dbname="atlas2019", host="abtdb1.nioz.nl")
 
 
 options(scipen=999)
 
 ##### Get Detections for test tag throughout testing. 
-as.numeric(as.POSIXct("2020-08-20 21:00:00"))
-as.numeric(as.POSIXct("2020-08-27 23:59:00"))
+as.numeric(as.POSIXct("2019-08-13 19:45"))*1000
+as.numeric(as.POSIXct("2019-08-13 19:55"))*1000
 
-tags <- as.character(31001001060) 
-dets <- dbGetQuery(con, "SELECT * from atlas2020.DETECTIONS where TAG = 31001001060 AND TIME > 1597950000000 AND TIME < 1598565540000 LIMIT 250000;")
+dets <- dbGetQuery(con, "SELECT * from atlas2019.DETECTIONS where TAG = 31001000795 AND TIME > 1565718300000 AND TIME < 1565718900000 LIMIT 250000;")
+dbDisconnect(con)
 
 #########
-dets$Timestamp <- as.POSIXct(dets$TIME/1000, origin = "1970-01-01") # Time is given in milliseconds so must /1000 before converting
-dets$UTCtime <- with_tz(dets$Timestamp, "UTC")
+dets$datetime <- as.POSIXct(dets$TIME/1000, origin = "1970-01-01") # Time is given in milliseconds so must /1000 before converting
+rec_bleeps <- merge(dets, receivers, by.x = "BS", by.y="BSid")
 
-dbDisconnect(con)
+
 
 setwd("C:/Users/cbeardsworth/OneDrive - NIOZ") # work PC
 setwd("~/GitHub/watlas_validation") #work github folder
@@ -62,8 +62,8 @@ base <- ggplot() +
   geom_sf(data = bath, aes(fill="Mudflat"),col="grey50", lwd=0.1) +
   geom_sf(data = coast,aes(fill="Griend (Land)"), col="grey40", lwd=0.1) +
   geom_sf(data=receivers, fill="red",aes(shape="Receivers"), size =3)+
-  #coord_sf(xlim= c(646864,654867), ylim=c(5901056,5905406))+ #griend only
-  coord_sf(xlim= c(min(bird_data$X)-100,max(bird_data$X)+100), ylim=c(min(bird_data$Y)-100,max(bird_data$Y)+100))+ #movement area only
+  coord_sf(xlim= c(646864,654867), ylim=c(5901056,5905406))+ #griend only
+  #coord_sf(xlim= c(min(bird_data$X)-100,max(bird_data$X)+100), ylim=c(min(bird_data$Y)-100,max(bird_data$Y)+100))+ #movement area only
   annotation_north_arrow(location="br",height= unit(0.8,"cm"), width= unit(0.6, "cm"), pad_y=unit(0.8, "cm"),
                          style=north_arrow_orienteering(text_size=8))+
   annotation_scale(location="br", width_hint=0.2)+
@@ -85,12 +85,14 @@ base <- ggplot() +
 
 bird_move <- base +
   geom_point(data=bird_data, aes(x=X,y=Y),col="purple")+
+  geom_point(data=rec_bleeps, aes(x=BS_x, y=BS_y), fill = "white", size= 3, shape = 24)+
   transition_time(datetime)+
   geom_point(aes(x= 649754.80,y=5902434.69))+
-  labs(title = "Time: {frame_time}")+
-  shadow_wake(wake_length = 0.05, alpha = FALSE)
+  labs(title = "Time: {frame_time}")
+  #shadow_wake(wake_length = 0.05, alpha = FALSE)+
+  #shadow_mark(fill="black")
 
-animate(bird_move, fps=0.5)
+animate(bird_move)
 
 base <- ggplot() +
   geom_sf(data = bath, aes(fill="Mudflat"),col="grey50", lwd=0.1) +
