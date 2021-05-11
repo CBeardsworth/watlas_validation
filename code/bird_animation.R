@@ -1,9 +1,14 @@
 library(watlastools)
 library(gganimate) 
 library(gifski)
+library(ggplot2)
 library(sf)
+library(dplyr)
+library(ggspatial)
+library(cowplot)
 
 setwd("C:/Users/cbeardsworth/OneDrive - NIOZ") # work PC
+setwd("~/GitHub/watlas_validation") #work github folder
 
 bath <- read_sf("data/DutchWaddenBathymetry-144_LAT.shp")
 coast_NL <- read_sf("data/WaddenCoast.gpkg")#%>% #https://www.eea.europa.eu/data-and-maps/data/eea-coastline-for-analysis-2/gis-data/eea-coastline-polygon 
@@ -30,14 +35,46 @@ bird_data <- wat_get_data(tag = 31001000795,
 
 observer <- c(649754.80,5902434.69)
 
-bird_move <- ggplot(bird_data) +
+base <- ggplot() +
   geom_sf(data = bath, aes(fill="Mudflat"),col="grey50", lwd=0.1) +
   geom_sf(data = coast,aes(fill="Griend (Land)"), col="grey40", lwd=0.1) +
   geom_sf(data=receivers, fill="red",aes(shape="Receivers"), size =3)+
-  geom_sf(data=bird_data, col="purple")+
-  transition_time(TIME)+
-  coord_sf(xlim= c(646864,654867), ylim=c(5900956,5906406))+ #griend only
-  geom_point(aes(x= 649754.80,y=5902434.69) )+
+  #coord_sf(xlim= c(646864,654867), ylim=c(5901056,5905406))+ #griend only
+  coord_sf(xlim= c(min(bird_data$X)-100,max(bird_data$X)+100), ylim=c(min(bird_data$Y)-100,max(bird_data$Y)+100))+ #movement area only
+  annotation_north_arrow(location="br",height= unit(0.8,"cm"), width= unit(0.6, "cm"), pad_y=unit(0.8, "cm"),
+                         style=north_arrow_orienteering(text_size=8))+
+  annotation_scale(location="br", width_hint=0.2)+
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(linetype="dashed", colour = "grey90"), 
+        panel.border= element_rect(colour="black", fill="NA"),
+        legend.key=element_blank(), 
+        #legend.position = c(0.15,0.85),
+        #legend.box.background = element_rect(colour="black"),
+        legend.spacing.y = unit(-0.1, "cm")) +
+        scale_fill_manual(values = c("Griend (Land)" = "grey65", "Mudflat" = "papayawhip"), 
+                    name = NULL) +
+       scale_shape_manual(values = c("Receivers" = 24), 
+                     name = NULL) +
+        scale_color_manual(name=NULL,
+                     labels=c("Boat","Walking"),
+                     values=c("#440154FF","#1F968BFF"))
+
+
+bird_move <- base +
+  geom_point(data=bird_data, aes(x=X,y=Y),col="purple")+
+  transition_time(datetime)+
+  geom_point(aes(x= 649754.80,y=5902434.69))+
+  #labs(title = "Time: {frame_time}")+
+  shadow_wake(wake_length = 0.05, alpha = FALSE)
+
+animate(bird_move)
+
+base <- ggplot() +
+  geom_sf(data = bath, aes(fill="Mudflat"),col="grey50", lwd=0.1) +
+  geom_sf(data = coast,aes(fill="Griend (Land)"), col="grey40", lwd=0.1) +
+  geom_sf(data=receivers, fill="red",aes(shape="Receivers"), size =3)+
+  #coord_sf(xlim= c(646864,654867), ylim=c(5901056,5905406))+ #griend only
+  coord_sf(xlim= c(min(bird_data$X)-100,max(bird_data$X)+100), ylim=c(min(bird_data$Y)-100,max(bird_data$Y)+100))+ #movement area only
   annotation_north_arrow(location="br",height= unit(0.8,"cm"), width= unit(0.6, "cm"), pad_y=unit(0.8, "cm"),
                          style=north_arrow_orienteering(text_size=8))+
   annotation_scale(location="br", width_hint=0.2)+
@@ -55,7 +92,14 @@ bird_move <- ggplot(bird_data) +
   scale_color_manual(name=NULL,
                      labels=c("Boat","Walking"),
                      values=c("#440154FF","#1F968BFF"))
-?animate
+
+
+bird_move <- base +
+  geom_point(data=bird_data, aes(x=X,y=Y),col="purple")+
+  transition_time(datetime)+
+  geom_point(aes(x= 649754.80,y=5902434.69))+
+  shadow_wake(wake_length = 0.1, alpha = FALSE)
+
 
 ani.options(interval = 60)
 animate(bird_move, "test.gif", title_frame = TRUE)
