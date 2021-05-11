@@ -6,6 +6,29 @@ library(sf)
 library(dplyr)
 library(ggspatial)
 library(cowplot)
+library(RMySQL)
+
+# receiver detections
+
+con <- dbConnect(MySQL(),
+                 user="atlaskama", password="watlasrulez:)",
+                 dbname="atlas2020", host="abtdb1.nioz.nl")
+
+
+options(scipen=999)
+
+##### Get Detections for test tag throughout testing. 
+as.numeric(as.POSIXct("2020-08-20 21:00:00"))
+as.numeric(as.POSIXct("2020-08-27 23:59:00"))
+
+tags <- as.character(31001001060) 
+dets <- dbGetQuery(con, "SELECT * from atlas2020.DETECTIONS where TAG = 31001001060 AND TIME > 1597950000000 AND TIME < 1598565540000 LIMIT 250000;")
+
+#########
+dets$Timestamp <- as.POSIXct(dets$TIME/1000, origin = "1970-01-01") # Time is given in milliseconds so must /1000 before converting
+dets$UTCtime <- with_tz(dets$Timestamp, "UTC")
+
+dbDisconnect(con)
 
 setwd("C:/Users/cbeardsworth/OneDrive - NIOZ") # work PC
 setwd("~/GitHub/watlas_validation") #work github folder
@@ -64,10 +87,10 @@ bird_move <- base +
   geom_point(data=bird_data, aes(x=X,y=Y),col="purple")+
   transition_time(datetime)+
   geom_point(aes(x= 649754.80,y=5902434.69))+
-  #labs(title = "Time: {frame_time}")+
+  labs(title = "Time: {frame_time}")+
   shadow_wake(wake_length = 0.05, alpha = FALSE)
 
-animate(bird_move)
+animate(bird_move, fps=0.5)
 
 base <- ggplot() +
   geom_sf(data = bath, aes(fill="Mudflat"),col="grey50", lwd=0.1) +
