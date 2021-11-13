@@ -23,7 +23,6 @@ stat_filt <- read.csv("data/stat_filt.csv")%>%
            end = as.POSIXct(end, format = "%Y/%m/%d %H:%M:%S"),
            Timestamp = as.POSIXct(start, format = "%Y/%m/%d %H:%M:%S"))
 
-
 stat_filt %>% #overall error
         summarize(n = length(error_dist), mean_error = mean(error_dist), sd= sd(error_dist), median_error = median(error_dist), q2.5 = quantile(error_dist, 0.025),q50 = quantile(error_dist, 0.5),q97.5 = quantile(error_dist, 0.975))
 
@@ -56,3 +55,21 @@ movingPoints_filt %>% #error by number of receivers
     group_by(NBS)%>%
     summarize(n = length(error_dist), mean_error = mean(error_dist), sd= sd(error_dist), median_error = median(error_dist), q2.5 = quantile(error_dist, 0.025),q50 = quantile(error_dist, 0.5),q97.5 = quantile(error_dist, 0.975))
 
+# GPS moving: mean speed (for likely error)
+
+gps_moving <- read_sf("data/gps_moving.gpkg")%>%
+    mutate(time = as.numeric(as.POSIXct(time, tz="Paris/Europe")),type = ifelse(track_fid ==3, "boat", "walk"))
+
+gps_moving$speed <- atl_get_speed(gps_moving, x = "gps_x", y = "gps_y", time = "time")
+
+gps <- gps_moving %>%
+    group_by(type) %>%
+    mutate(speed = replace(speed, row_number() == 1, NA))%>%
+    summarise(mean_speed = mean(speed, na.rm=T), SD_speed = sd(speed, na.rm=T))
+gps
+
+# Case study - fix rate
+
+fixes <-read.csv("data/fix_rates.csv")
+
+mean(fixes$mean_fix_rate)

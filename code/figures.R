@@ -2,8 +2,6 @@ library(sf)
 library(ggplot2)
 library(ggspatial)
 library(cowplot)
-library(dplyr)
-library(atlastools)
 
 # Get data --------------------------------------------------------------------------------------------------------------------
 
@@ -49,10 +47,10 @@ atlas_dets_geom <- read.csv("data/detections_atlas.csv")%>%
 
 #### Figures ####-------------------------------------------------------------------------------------------------------------
 
-bath <- read_sf("data/DutchWaddenBathymetry-144_LAT.shp")
-coast_NL <- read_sf("data/WaddenCoast.gpkg")#%>% #https://www.eea.europa.eu/data-and-maps/data/eea-coastline-for-analysis-2/gis-data/eea-coastline-polygon 
-coast <- read_sf("data/DutchWaddenBathymetry100.shp")
-receivers <- read_sf("data/2020receivers.gpkg")
+bath <- read_sf("D:/OneDrive - NIOZ/2_Reference Data/Basemaps/utm31 Bathy/DutchWaddenBathymetry-144_LAT.shp")
+coast_NL <- read_sf("D:/OneDrive - NIOZ/2_Reference Data/Basemaps/WaddenCoast.gpkg")#%>% #https://www.eea.europa.eu/data-and-maps/data/eea-coastline-for-analysis-2/gis-data/eea-coastline-polygon 
+coast <- read_sf("D:/OneDrive - NIOZ/2_Reference Data/Basemaps/utm31 Bathy/DutchWaddenBathymetry100.shp")
+receivers <- read_sf("D:/OneDrive - NIOZ/2_Reference Data/Receiver Locations/2020receivers.gpkg")
 
 # Figure 1 - Wadden sea and receiver overview -----
 
@@ -92,11 +90,6 @@ pdf(file = "figs/Validation_Fig1_wadden.pdf",
 wadden
 dev.off()
 
-png(file = "figs/Validation_Fig1_wadden.png", unit="in", res= 600,
-    width = 9, height = 8)
-wadden
-dev.off()
-
 # Figure 2 - experiment -----
 
 track <- ggplot() +  
@@ -129,11 +122,6 @@ track <- ggplot() +
 #track
 
 pdf(file = "figs/Validation_Fig2_experiment.pdf",
-    width = 9, height = 5.5)
-track
-dev.off()
-
-png(file = "figs/Validation_Fig2_experiment.png",unit="in", res=600,
     width = 9, height = 5.5)
 track
 dev.off()
@@ -209,12 +197,6 @@ p <- plot_grid(raw, filt,leg, labels=c("A","B", ""), ncol=1, nrow=3, rel_heights
 p
 dev.off()
 
-png(file = "figs/Validation_Fig3_Raw_v_Filt.png",unit="in", res=600,
-    width = 9, height = 12)
-p <- plot_grid(raw, filt,leg, labels=c("A","B", ""), ncol=1, nrow=3, rel_heights = c(1,1,0.1))
-p
-dev.off()
-
 ##### Figure 4 - Static Raw and Filtered vs GPS ####
 #plot(gps_stat)
 raw <- ggplot() + 
@@ -222,8 +204,8 @@ raw <- ggplot() +
     geom_sf(data = bath, aes(fill="Mudflat"),col="grey50", lwd=0.1) + 
     geom_sf(data = coast,aes(fill="Land"), col="grey40", lwd=0.1) +
     geom_sf(data=receivers, aes(shape="Receivers", size= "Receivers"), fill="red")+
-    geom_sf(data=gps_stat, aes(shape = "GPS Location Estimate (mean)", size = "GPS Location Estimate (mean)"), col="black")+
     geom_sf(data=stat, aes(shape = "ATLAS Location estimate", size= "ATLAS Location estimate"), col="darkorchid3")+
+    geom_sf(data=gps_stat, aes(shape = "GPS Location Estimate (mean)", size = "GPS Location Estimate (mean)"), col="black")+
     xlab("Longitude")+
     ylab("Latitude")+
     coord_sf(xlim= c(646864,654867), ylim=c(5900956,5908006))+ #griend only
@@ -238,7 +220,7 @@ raw <- ggplot() +
           legend.position = "none") +
     scale_fill_manual(values = c("Land" = "grey65", "Mudflat" = "papayawhip"),
                       name = NULL) +
-    scale_shape_manual(values = c("Receivers" = 24, "GPS Location Estimate (mean)" = 1, "ATLAS Location estimate"=4),
+    scale_shape_manual(values = c("Receivers" = 24, "GPS Location Estimate (mean)" = 4, "ATLAS Location estimate"=4),
                        name = NULL)+
     scale_size_manual(values = c("Receivers" = 3, "GPS Location Estimate (mean)" = 5, "ATLAS Location estimate"=1),
                       name = NULL)+
@@ -251,8 +233,8 @@ filt <- ggplot() +
     geom_sf(data = bath, aes(fill="Mudflat"),col="grey50", lwd=0.1) + 
     geom_sf(data = coast,aes(fill="Land"), col="grey40", lwd=0.1) +
     geom_sf(data=receivers, aes(shape="Receivers", size= "Receivers"), fill="red")+
-    geom_sf(data=gps_stat, aes(shape = "GPS Location Estimate (mean)", size = "GPS Location Estimate (mean)"), col="black")+
     geom_sf(data=stat_filt, aes(shape = "ATLAS Location estimate", size= "ATLAS Location estimate"), col="darkorchid3")+
+    geom_sf(data=gps_stat, aes(shape = "GPS Location Estimate (mean)", size = "GPS Location Estimate (mean)"), col="black")+
     xlab("Longitude")+
     ylab("Latitude")+
     coord_sf(xlim= c(646864,654867), ylim=c(5900956,5908006))+ #griend only
@@ -267,13 +249,13 @@ filt <- ggplot() +
           legend.position = "none") +
     scale_fill_manual(values = c("Land" = "grey65", "Mudflat" = "papayawhip"),
                       name = NULL) +
-    scale_shape_manual(values = c("Receivers" = 24, "GPS Location Estimate (mean)" = 1, "ATLAS Location estimate"=4),
+    scale_shape_manual(values = c("Receivers" = 24, "GPS Location Estimate (mean)" = 4, "ATLAS Location estimate"=4),
                        name = NULL)+
     scale_size_manual(values = c("Receivers" = 3, "GPS Location Estimate (mean)" = 5, "ATLAS Location estimate"=1),
                       name = NULL)+
     guides(size = guide_legend(override.aes = list(size=c(2,5,5), col=c("darkorchid3", "black","black"))))
 
-filt
+#filt
 
 leg <- get_legend(raw + theme(legend.position="bottom"))
 
@@ -302,12 +284,6 @@ maps <- plot_grid(raw,filt, labels = c("A", "B"))
 hist <- plot_grid(raw_hist, filt_hist, labels = c("C", "D"))
 
 pdf(file = "figs/Validation_Fig4_Raw_v_Filt_Static.pdf",
-    width = 9, height = 7)
-p <- plot_grid(maps,leg,  hist, ncol=1, nrow=3,rel_heights = c(1,0.08,0.7))
-p
-dev.off()
-
-png(file = "figs/Validation_Fig4_Raw_v_Filt_Static.png",unit="in", res=1200,
     width = 9, height = 7)
 p <- plot_grid(maps,leg,  hist, ncol=1, nrow=3,rel_heights = c(1,0.08,0.7))
 p
@@ -355,16 +331,168 @@ p <- cowplot::plot_grid(plotlist = my_plots, ncol=2, nrow=5)
 p
 dev.off()
 
-png(file = "figs/Validation_Fig5_Dets.png", unit="in", res=600,
-    width = 9, height = 18)
-p <- cowplot::plot_grid(plotlist = my_plots, ncol=2, nrow=5)
-p
+#Figure 6 
+
+#Case study: foraging (A)
+
+a_dat <- read.csv("data/Fig6_A_data.csv") %>%
+    mutate(x=X, y=Y)%>%
+    st_as_sf(coords=c("x","y")) %>%
+    st_set_crs(32631)
+
+lines_forage <- a_dat %>%
+    group_by(id, tide) %>%
+    #st_as_sf(coords=c("x","y")) %>%
+    summarise(do_union=F) %>%
+    st_cast("LINESTRING")%>%
+    st_set_crs(32631)%>%
+    mutate(id=factor(id))
+
+plot_a <- ggplot()+
+    #ggtitle(paste("Raw data // Bird:", id, sep=" "))+    
+    geom_sf(data = bath, aes(fill="Mudflat"),col="grey50", lwd=0.1) + 
+    geom_sf(data = coast,aes(fill="Land"), col="grey40", lwd=0.1) +
+    geom_sf(data = receivers, shape = 24, fill="red", size = 4)+
+    #geom_sf(data=patch_summary_speed, aes(col = factor(patch)))+
+    geom_sf(data=lines_forage, col="grey", size = 0.5)+
+    geom_sf(data=a_dat, size = 0.5, aes(col=factor(fix_rate)))+
+    xlab("Longitude") +
+    ylab("Latitude") +
+    #geom_point(aes(x=5.1, y= 53.2), size = 10, col = "red")+
+    #coord_sf(xlim= c(635264,657167), ylim=c(5894956,5915506))+ #griend region
+    #coord_sf(xlim= c(646564,654867), ylim=c(5900756,5906406))+ #griend only
+    coord_sf(xlim = c(min(a_dat$X)-100, max(a_dat$X)+100), ylim = c(min(a_dat$Y)-500, max(a_dat$Y)+100)) +
+    scale_color_manual(values = c("darkblue","forestgreen"))+
+    annotation_north_arrow(location="br",height= unit(0.8,"cm"), width= unit(0.6, "cm"), pad_y=unit(0.8, "cm"),
+                           style=north_arrow_orienteering(text_size=8))+
+    annotation_scale(location="br", width_hint=0.2)+
+    theme(panel.background = element_rect(fill = "white"),
+          panel.grid.major = element_line(linetype="dashed", colour = "grey90"), 
+          panel.border= element_rect(colour="black", fill="NA"),
+          legend.key=element_blank())+ 
+    #legend.position = "none") +
+    scale_fill_manual(values = c("Land" = "grey65", "Mudflat" = "papayawhip"),
+                      name = NULL, guide ="none") +
+    guides(color = guide_legend(override.aes = list(size=4, shape = 15), title = "Fix rate"))
+#scale_color_discrete()
+plot_a
+
+
+# Case study: small scale (B)
+
+b_dat <- read.csv("data/Fig6_B_data.csv") %>%
+    mutate(x=X, y=Y)%>%
+    st_as_sf(coords=c("x","y"))  %>%
+    st_set_crs(32631)
+
+lines_small <- b_dat %>%
+    group_by(id, tide) %>%
+    #st_as_sf(coords=c("x","y")) %>%
+    summarise(do_union=F) %>%
+    st_cast("LINESTRING")%>%
+    st_set_crs(32631)%>%
+    mutate(id=factor(id))
+
+plot_b <- ggplot()+
+    #ggtitle(paste("Raw data // Bird:", id, sep=" "))+    
+    geom_sf(data = bath, aes(fill="Mudflat"),col="grey50", lwd=0.1) + 
+    geom_sf(data = coast,aes(fill="Land"), col="grey40", lwd=0.1) +
+    geom_sf(data = receivers, shape = 24, fill="red", size = 4)+
+    #geom_sf(data=patch_summary_speed, aes(col = factor(patch)))+
+    geom_sf(data=lines_small, col="grey", size = 0.5)+
+    geom_sf(data=b_dat, size = 0.5, aes(col=factor(fix_rate)))+
+    xlab("Longitude") +
+    ylab("Latitude") +
+    #geom_point(aes(x=5.1, y= 53.2), size = 10, col = "red")+
+    #coord_sf(xlim= c(635264,657167), ylim=c(5894956,5915506))+ #griend region
+    #coord_sf(xlim= c(646564,654867), ylim=c(5900756,5906406))+ #griend only
+    coord_sf(xlim = c(min(b_dat$X)+100, max(b_dat$X)-12500), ylim = c(min(b_dat$Y)-100, max(b_dat$Y)-100)) +
+    scale_color_manual(values = c("darkblue","forestgreen"))+
+    
+    annotation_north_arrow(location="br",height= unit(0.8,"cm"), width= unit(0.6, "cm"), pad_y=unit(0.8, "cm"),
+                           style=north_arrow_orienteering(text_size=8))+
+    annotation_scale(location="br", width_hint=0.2)+
+    theme(panel.background = element_rect(fill = "white"),
+          panel.grid.major = element_line(linetype="dashed", colour = "grey90"), 
+          panel.border= element_rect(colour="black", fill="NA"),
+          legend.key=element_blank())+ 
+    #legend.position = "none") +
+    scale_fill_manual(values = c("Land" = "grey65", "Mudflat" = "papayawhip"),
+                      name = NULL, guide ="none") +
+    guides(color = guide_legend(override.aes = list(size=4, shape = 15), title = "Fix rate"))
+#scale_color_discrete()
+
+
+# Case study: large scale (C)
+#
+
+c_dat <- read.csv("data/Fig6_C_data.csv") %>%
+    mutate(x=X, y=Y)%>%
+    st_as_sf(coords=c("x","y"))  %>%
+    st_set_crs(32631)
+
+lines_large <- c_dat %>%
+    group_by(id, tide) %>%
+    #st_as_sf(coords=c("x","y")) %>%
+    summarise(do_union=F) %>%
+    st_cast("LINESTRING")%>%
+    st_set_crs(32631)%>%
+    mutate(id=factor(id))
+
+
+plot_c <- ggplot()+
+    #ggtitle(paste("Raw data // Bird:", id, sep=" "))+    
+    geom_sf(data = bath, aes(fill="Mudflat"),col="grey50", lwd=0.1) + 
+    geom_sf(data = coast,aes(fill="Land"), col="grey40", lwd=0.1) +
+    #geom_sf(data=patch_summary_speed, aes(col = factor(patch)))+
+    geom_sf(data=lines_large, col="grey", size = 0.5)+
+    geom_sf(data=c_dat, size = 0.5, aes(col=factor(fix_rate)))+
+    geom_sf(data = receivers, shape = 24, fill="red", size = 2)+
+    xlab("Longitude") +
+    ylab("Latitude") +
+    #geom_point(aes(x=5.1, y= 53.2), size = 10, col = "red")+
+    #coord_sf(xlim= c(635264,657167), ylim=c(5894956,5915506))+ #griend region
+    #coord_sf(xlim= c(646564,654867), ylim=c(5900756,5906406))+ #griend only
+    coord_sf(xlim = c(min(c_dat$X)-500, max(c_dat$X)+500), ylim = c(min(c_dat$Y)-500, max(c_dat$Y)+500)) +
+    scale_color_manual(values = c("turquoise2","violetred1","darkorange1","blue3","chartreuse1"))+
+    
+    annotation_north_arrow(location="br",height= unit(0.8,"cm"), width= unit(0.6, "cm"), pad_y=unit(0.8, "cm"),
+                           style=north_arrow_orienteering(text_size=8))+
+    annotation_scale(location="br", width_hint=0.2)+
+    theme(panel.background = element_rect(fill = "white"),
+          panel.grid.major = element_line(linetype="dashed", colour = "grey90"), 
+          panel.border= element_rect(colour="black", fill="NA"),
+          legend.key=element_blank())+ 
+    #legend.position = "none") +
+    scale_fill_manual(values = c("Land" = "grey65", "Mudflat" = "papayawhip"),
+                      name = NULL, guide ="none") +
+    guides(color = guide_legend(override.aes = list(size=4, shape = 15), title = "Fix rate"))
+#scale_color_discrete()
+plot_c
+
+# Case study: histogram of fix rates (D)
+fixes <- read.csv("data/fix_rates.csv")
+
+hist_plot <- ggplot(fixes, aes(x = mean_fix_rate))+
+    geom_histogram(col="white", fill="grey10")+
+    scale_x_continuous(expand = c(0,0), limits = c(0,105), name = "Mean fix rate \n(per bird, per tide)")+
+    scale_y_continuous(expand = c(0,0), limits = c(0,300), name = "Frequency")+
+    theme_classic()
+
+#Paste all plots together
+plotsAB <- plot_grid(plot_a, plot_b, nrow=2,labels = "AUTO")            
+plotsCD <-  plot_grid(plot_c, hist_plot, rel_widths = c(1,0.55), labels = c("C","D"))    
+all_plots <- plot_grid(plotsAB, plotsCD, nrow=2, ncol=1,rel_heights = c(1,0.5), labels = "")
+
+all_plots
+
+#save plots
+pdf("figs/Validation_Fig6_casestudy.pdf", width=9, height=14)
+all_plots
 dev.off()
 
-png(file = "figs/Validation_Fig5_Dets.png", unit="in", res=600,
-    width = 18, height = 9)
-p <- cowplot::plot_grid(plotlist = my_plots, ncol=4, nrow=3)
-p
+png("figs/Validation_Fig6_casestudy.png",res=300, width=9, height=12, unit="in")
+all_plots
 dev.off()
 
 # ESM S1 -----
@@ -449,7 +577,7 @@ for (win in c(0,seq(3,60,2))){
     
     win_moving <- data.frame(win=win, sum_moving_filt)
     all_win_moving <- rbind(all_win_moving,win_moving)
-    }
+}
 all_win_stat <- all_win_stat[all_win_stat$n>all_win_stat$win,] # ensure that when median window is more than the window it is removed. 
 
 # ESM1 - plots ------    
@@ -477,7 +605,7 @@ stat2 <- ggplot(all_var_stat[all_var_stat$var <=5000 ,], aes(x=var, y = fix_rate
     scale_y_continuous(expand=c(0,0), limits=c(0,105), breaks=seq(0,100,10))+
     scale_x_reverse(expand=c(0,0), limits=c(5000, -100))+
     geom_vline(xintercept=2000,linetype="dashed")+
-    ylab("% of expected localisations remaining")+
+    ylab("fix rate")+
     xlab("VARX & VARY filtering values")+
     scale_color_manual(values=rainbow(n=16))+
     theme(legend.position="none",
@@ -576,4 +704,10 @@ png(file = "figs/Validation_Supplementary1_FilterSmoothing.png",unit="in", res=6
 p <- plot_grid(title_stat, stat_plots,title_move,move_plots, ncol=1, nrow=4, rel_heights = c(0.1,1,0.1,1))
 p
 dev.off()
+
+
+#Supplement 3
+
+
+
 
