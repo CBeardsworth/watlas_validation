@@ -1,4 +1,4 @@
-## Repository for manuscript: Validating a high-throughput tracking system: ATLAS as a regional-scale alternative to GPS
+## Repository for manuscript: Validating ATLAS: a regional-scale high-throughput tracking system: 
 
 _Christine E. Beardsworth, Evy Gobbens, Frank van Maarseveen, Bas Denissen, Anne Dekinga, Ran Nathan, Sivan Toledo, and Allert I. Bijleveld_
 
