@@ -2,6 +2,8 @@ library(sf)
 library(ggplot2)
 library(ggspatial)
 library(cowplot)
+library(stars)
+library(dplyr)
 
 # Get data --------------------------------------------------------------------------------------------------------------------
 
@@ -331,7 +333,7 @@ p <- cowplot::plot_grid(plotlist = my_plots, ncol=2, nrow=5)
 p
 dev.off()
 
-#Figure 6 
+#### --- Figure 6 --- #### 
 
 #Case study: foraging (A)
 
@@ -349,18 +351,13 @@ lines_forage <- a_dat %>%
     mutate(id=factor(id))
 
 plot_a <- ggplot()+
-    #ggtitle(paste("Raw data // Bird:", id, sep=" "))+    
     geom_sf(data = bath, aes(fill="Mudflat"),col="grey50", lwd=0.1) + 
     geom_sf(data = coast,aes(fill="Land"), col="grey40", lwd=0.1) +
     geom_sf(data = receivers, shape = 24, fill="red", size = 4)+
-    #geom_sf(data=patch_summary_speed, aes(col = factor(patch)))+
     geom_sf(data=lines_forage, col="grey", size = 0.5)+
     geom_sf(data=a_dat, size = 0.5, aes(col=factor(fix_rate)))+
     xlab("Longitude") +
     ylab("Latitude") +
-    #geom_point(aes(x=5.1, y= 53.2), size = 10, col = "red")+
-    #coord_sf(xlim= c(635264,657167), ylim=c(5894956,5915506))+ #griend region
-    #coord_sf(xlim= c(646564,654867), ylim=c(5900756,5906406))+ #griend only
     coord_sf(xlim = c(min(a_dat$X)-100, max(a_dat$X)+100), ylim = c(min(a_dat$Y)-500, max(a_dat$Y)+100)) +
     scale_color_manual(values = c("darkblue","forestgreen"))+
     annotation_north_arrow(location="br",height= unit(0.8,"cm"), width= unit(0.6, "cm"), pad_y=unit(0.8, "cm"),
@@ -369,93 +366,39 @@ plot_a <- ggplot()+
     theme(panel.background = element_rect(fill = "white"),
           panel.grid.major = element_line(linetype="dashed", colour = "grey90"), 
           panel.border= element_rect(colour="black", fill="NA"),
-          legend.key=element_blank())+ 
-    #legend.position = "none") +
+          legend.key=element_blank()) +
     scale_fill_manual(values = c("Land" = "grey65", "Mudflat" = "papayawhip"),
                       name = NULL, guide ="none") +
     guides(color = guide_legend(override.aes = list(size=4, shape = 15), title = "Fix rate"))
-#scale_color_discrete()
-plot_a
 
+#plot_a
 
-# Case study: small scale (B)
+# Case study: large scale (C)
 
 b_dat <- read.csv("data/Fig6_B_data.csv") %>%
     mutate(x=X, y=Y)%>%
     st_as_sf(coords=c("x","y"))  %>%
     st_set_crs(32631)
 
-lines_small <- b_dat %>%
+lines_large <- b_dat %>%
     group_by(id, tide) %>%
     #st_as_sf(coords=c("x","y")) %>%
     summarise(do_union=F) %>%
     st_cast("LINESTRING")%>%
     st_set_crs(32631)%>%
     mutate(id=factor(id))
+
 
 plot_b <- ggplot()+
-    #ggtitle(paste("Raw data // Bird:", id, sep=" "))+    
     geom_sf(data = bath, aes(fill="Mudflat"),col="grey50", lwd=0.1) + 
-    geom_sf(data = coast,aes(fill="Land"), col="grey40", lwd=0.1) +
-    geom_sf(data = receivers, shape = 24, fill="red", size = 4)+
-    #geom_sf(data=patch_summary_speed, aes(col = factor(patch)))+
-    geom_sf(data=lines_small, col="grey", size = 0.5)+
-    geom_sf(data=b_dat, size = 0.5, aes(col=factor(fix_rate)))+
-    xlab("Longitude") +
-    ylab("Latitude") +
-    #geom_point(aes(x=5.1, y= 53.2), size = 10, col = "red")+
-    #coord_sf(xlim= c(635264,657167), ylim=c(5894956,5915506))+ #griend region
-    #coord_sf(xlim= c(646564,654867), ylim=c(5900756,5906406))+ #griend only
-    coord_sf(xlim = c(min(b_dat$X)+100, max(b_dat$X)-12500), ylim = c(min(b_dat$Y)-100, max(b_dat$Y)-100)) +
-    scale_color_manual(values = c("darkblue","forestgreen"))+
-    
-    annotation_north_arrow(location="br",height= unit(0.8,"cm"), width= unit(0.6, "cm"), pad_y=unit(0.8, "cm"),
-                           style=north_arrow_orienteering(text_size=8))+
-    annotation_scale(location="br", width_hint=0.2)+
-    theme(panel.background = element_rect(fill = "white"),
-          panel.grid.major = element_line(linetype="dashed", colour = "grey90"), 
-          panel.border= element_rect(colour="black", fill="NA"),
-          legend.key=element_blank())+ 
-    #legend.position = "none") +
-    scale_fill_manual(values = c("Land" = "grey65", "Mudflat" = "papayawhip"),
-                      name = NULL, guide ="none") +
-    guides(color = guide_legend(override.aes = list(size=4, shape = 15), title = "Fix rate"))
-#scale_color_discrete()
-
-
-# Case study: large scale (C)
-#
-
-c_dat <- read.csv("data/Fig6_C_data.csv") %>%
-    mutate(x=X, y=Y)%>%
-    st_as_sf(coords=c("x","y"))  %>%
-    st_set_crs(32631)
-
-lines_large <- c_dat %>%
-    group_by(id, tide) %>%
-    #st_as_sf(coords=c("x","y")) %>%
-    summarise(do_union=F) %>%
-    st_cast("LINESTRING")%>%
-    st_set_crs(32631)%>%
-    mutate(id=factor(id))
-
-
-plot_c <- ggplot()+
-    #ggtitle(paste("Raw data // Bird:", id, sep=" "))+    
-    geom_sf(data = bath, aes(fill="Mudflat"),col="grey50", lwd=0.1) + 
-    geom_sf(data = coast,aes(fill="Land"), col="grey40", lwd=0.1) +
-    #geom_sf(data=patch_summary_speed, aes(col = factor(patch)))+
+    geom_sf(data = coast_NL,aes(fill="Land"), col="grey40", lwd=0.1) +
     geom_sf(data=lines_large, col="grey", size = 0.5)+
-    geom_sf(data=c_dat, size = 0.5, aes(col=factor(fix_rate)))+
+    geom_sf(data=b_dat, size = 0.5, aes(col=factor(fix_rate)))+
     geom_sf(data = receivers, shape = 24, fill="red", size = 2)+
     xlab("Longitude") +
     ylab("Latitude") +
-    #geom_point(aes(x=5.1, y= 53.2), size = 10, col = "red")+
-    #coord_sf(xlim= c(635264,657167), ylim=c(5894956,5915506))+ #griend region
-    #coord_sf(xlim= c(646564,654867), ylim=c(5900756,5906406))+ #griend only
-    coord_sf(xlim = c(min(c_dat$X)-500, max(c_dat$X)+500), ylim = c(min(c_dat$Y)-500, max(c_dat$Y)+500)) +
+    coord_sf(xlim = c(min(b_dat$X)-500, max(b_dat$X)+500), ylim = c(min(b_dat$Y)-500, max(b_dat$Y)+500)) +
     scale_color_manual(values = c("turquoise2","violetred1","darkorange1","blue3","chartreuse1"))+
-    
     annotation_north_arrow(location="br",height= unit(0.8,"cm"), width= unit(0.6, "cm"), pad_y=unit(0.8, "cm"),
                            style=north_arrow_orienteering(text_size=8))+
     annotation_scale(location="br", width_hint=0.2)+
@@ -463,35 +406,58 @@ plot_c <- ggplot()+
           panel.grid.major = element_line(linetype="dashed", colour = "grey90"), 
           panel.border= element_rect(colour="black", fill="NA"),
           legend.key=element_blank())+ 
-    #legend.position = "none") +
     scale_fill_manual(values = c("Land" = "grey65", "Mudflat" = "papayawhip"),
                       name = NULL, guide ="none") +
     guides(color = guide_legend(override.aes = list(size=4, shape = 15), title = "Fix rate"))
-#scale_color_discrete()
-plot_c
+
+plot_b
+
+#fix rate for residence patches
+stars_griend <- read_stars("data/griend_respatches2020_50m.tif")
+names(stars_griend) <- "Fix rate"
+
+plot_d <- ggplot()+ 
+    geom_sf(data = bath, fill="papayawhip",col="grey50", lwd=0.1) + 
+    geom_sf(data = coast, fill="grey45", col="grey40", lwd=0.1) +
+    geom_stars(data= stars_griend, na.rm =T)+
+    geom_sf(data = receivers, shape = 24, fill="red", col = "white", size = 4)+
+    xlab("Longitude") +
+    ylab("Latitude") +
+    coord_sf(xlim= c(644800 ,656600), ylim=c(5900200,5908000))+ #custom region
+    annotation_north_arrow(location="br",height= unit(0.8,"cm"), width= unit(0.6, "cm"), pad_y=unit(0.8, "cm"),
+                           style=north_arrow_orienteering(text_size=8))+
+    annotation_scale(location="br", width_hint=0.2)+
+    theme(panel.background = element_rect(fill = "white"),
+          panel.grid.major = element_line(linetype="dashed", colour = "grey90"), 
+          panel.border= element_rect(colour="black", fill="NA")) +
+    scale_fill_viridis_c(na.value = NA)
+
+#plot_d
 
 # Case study: histogram of fix rates (D)
-fixes <- read.csv("data/fix_rates.csv")
 
-hist_plot <- ggplot(fixes, aes(x = mean_fix_rate))+
+griend_fixrates <- read.csv("data/griend_respatches2020_fixrates.csv")
+
+hist_resplot <- ggplot(griend_fixrates, aes(x = fix_rate))+
     geom_histogram(col="white", fill="grey10")+
-    scale_x_continuous(expand = c(0,0), limits = c(0,105), name = "Mean fix rate \n(per bird, per tide)")+
-    scale_y_continuous(expand = c(0,0), limits = c(0,300), name = "Frequency")+
+    scale_x_continuous(expand = c(0,0), name = "Fix rate (%) \nper residence patch \n (Griend only)")+
+    scale_y_continuous(expand = c(0,0), limits = c(0,2300), name = "Frequency")+
     theme_classic()
+hist_resplot
 
 #Paste all plots together
-plotsAB <- plot_grid(plot_a, plot_b, nrow=2,labels = "AUTO")            
-plotsCD <-  plot_grid(plot_c, hist_plot, rel_widths = c(1,0.55), labels = c("C","D"))    
-all_plots <- plot_grid(plotsAB, plotsCD, nrow=2, ncol=1,rel_heights = c(1,0.5), labels = "")
 
-all_plots
+plotsBC <-  plot_grid(plot_b, hist_resplot, rel_widths = c(1,0.3), rel_heights= c(1,1),labels = c("B","C"))    
+all_plots <- plot_grid(plot_a, plotsBC, plot_d, nrow=3, ncol=1,rel_heights = c(0.6,1,0.7), labels = c("A","","D"))
+
+#all_plots
 
 #save plots
 pdf("figs/Validation_Fig6_casestudy.pdf", width=9, height=14)
 all_plots
 dev.off()
 
-png("figs/Validation_Fig6_casestudy.png",res=300, width=9, height=12, unit="in")
+png("figs/Validation_Fig6_casestudy.png",res=300, width=9, height=14, unit="in")
 all_plots
 dev.off()
 

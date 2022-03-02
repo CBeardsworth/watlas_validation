@@ -70,6 +70,11 @@ gps
 
 # Case study - fix rate
 
-fixes <-read.csv("data/fix_rates.csv")
+fixes <- read.csv("data/griend_respatches2020_fixrates.csv", stringsAsFactors = F)
 
-mean(fixes$mean_fix_rate)
+length(unique(fixes$id)) # n birds
+length(unique(fixes$tideID)) # n birds
+
+mean(fixes$fix_rate)
+sd(fixes$fix_rate)
+
